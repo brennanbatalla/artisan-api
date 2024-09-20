@@ -7,6 +7,7 @@ from fastapi import APIRouter, Request, HTTPException
 
 from app.chats.chat_model import ChatCollection, MessageModel, BaseMessage
 from app.chats.schemas import PostChatMessageModel
+from app.services.openai_service import get_chat_response
 
 router = APIRouter()
 
@@ -33,8 +34,10 @@ async def post_chat_message(request: Request, chat_id: str, message: PostChatMes
     message_dict = message.model_dump()
     message_dict["createdAt"] = time.time()  # Automatically set the creation date
 
-    message_dict["response"] = "Great, hi."
-    message_dict["quickOptions"] = []
+    ai_response = await get_chat_response(message.message, message.context)
+    print(ai_response)
+    message_dict["response"] = ai_response['response']
+    message_dict["quickOptions"] = ai_response['quickOptions']
 
     new_message = MessageModel(
         id=str(uuid.uuid4()),
