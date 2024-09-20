@@ -3,3 +3,9 @@ pydantic
 motor
 python-dotenv
 openai
+pytest
+asgi_lifespan==1.0.1
+pytest-asyncio
+# To mock database
+mongomock==4.0.0
+mongomock-motor==0.0.12
