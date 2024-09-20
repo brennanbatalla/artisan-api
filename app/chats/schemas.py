@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 
 
-# ====== PostChatMessageModel =======
+# ====== UpsertChatMessageModel =======
 
-class PostChatMessageModel(BaseModel):
+class UpsertChatMessageModel(BaseModel):
     message: str
     context: str
-    chatId: str
