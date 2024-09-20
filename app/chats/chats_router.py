@@ -4,20 +4,22 @@ from typing import List
 
 from bson import ObjectId
 from fastapi import APIRouter, Request, HTTPException
+from fastapi.params import Depends
 
 from app.chats.chat_model import ChatCollection, MessageModel, BaseMessage
 from app.chats.schemas import UpsertChatMessageModel
+from app.middlewares.auth import TokenAuth
 from app.services.openai_service import get_chat_response
 
 router = APIRouter()
 
 
-@router.get("/chats", response_model=List[ChatCollection])
+@router.get("/chats", response_model=List[ChatCollection], dependencies=[Depends(TokenAuth())])
 async def get_chats(request: Request):
     return await request.app.mongodb.chats.find().to_list()
 
 
-@router.post("/chats", response_model=ChatCollection)
+@router.post("/chats", response_model=ChatCollection, dependencies=[Depends(TokenAuth())])
 async def get_chats(request: Request):
     res = await request.app.mongodb.chats.insert_one({
         "messages": [],
@@ -29,7 +31,7 @@ async def get_chats(request: Request):
     raise HTTPException(status_code=500, detail="Failed to create item")
 
 
-@router.post("/chats/{chat_id}/messages")
+@router.post("/chats/{chat_id}/messages", dependencies=[Depends(TokenAuth())], response_model=MessageModel)
 async def post_chat_message(request: Request, chat_id: str, message: UpsertChatMessageModel):
     message_dict = message.model_dump()
     message_dict["createdAt"] = time.time()  # Automatically set the creation date
@@ -55,7 +57,7 @@ async def post_chat_message(request: Request, chat_id: str, message: UpsertChatM
     return new_message
 
 
-@router.patch("/chats/{chat_id}/messages/{message_id}")
+@router.patch("/chats/{chat_id}/messages/{message_id}", response_model=MessageModel, dependencies=[Depends(TokenAuth())])
 async def patch_chat_message(request: Request, chat_id: str, message_id: str, message: UpsertChatMessageModel):
     chat = await request.app.mongodb.chats.find_one({"_id": ObjectId(chat_id)})
 
@@ -86,7 +88,7 @@ async def patch_chat_message(request: Request, chat_id: str, message_id: str, me
     return update_message
 
 
-@router.delete("/chats/{chat_id}/messages/{message_id}")
+@router.delete("/chats/{chat_id}/messages/{message_id}", dependencies=[Depends(TokenAuth())])
 async def patch_chat_message(request: Request, chat_id: str, message_id: str):
     chat = await request.app.mongodb.chats.find_one({"_id": ObjectId(chat_id)})
 
