@@ -1,0 +1,5 @@
+fastapi
+pydantic
+motor
+python-dotenv
+openai
