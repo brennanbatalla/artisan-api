@@ -84,3 +84,21 @@ async def patch_chat_message(request: Request, chat_id: str, message_id: str, me
     )
 
     return update_message
+
+
+@router.delete("/chats/{chat_id}/messages/{message_id}")
+async def patch_chat_message(request: Request, chat_id: str, message_id: str):
+    chat = await request.app.mongodb.chats.find_one({"_id": ObjectId(chat_id)})
+
+    messages = []
+    for m in chat["messages"]:
+        if m["id"] != message_id:
+            messages.append(m)
+
+    # Update the chat document by pushing the new message to the messages array
+    await request.app.mongodb.chats.update_one(
+        {"_id": ObjectId(chat_id)},
+        {"$set": {"messages": messages}}
+    )
+
+    return 'success'
